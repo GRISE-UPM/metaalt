@@ -2,112 +2,56 @@
 #' lower and upper confidence interval limits
 #' using the Non Parametric Response Ratio method
 #'
-#' For one experiment or study the individual
-#' effect is calculated, for more than one
-#' the overall effect is calculated.
-#'
-#' While variance is not required for this method,
-#' it is still needed to generate the samples.
-#'
 #' @param sample_size Number of observations
 #' @param mean_e Estimated mean in experimental group
 #' @param mean_c Estimated mean in control group
-#' @param sd_e Standard deviation (for sample generation purposes)
 #' @param n_experiments Number of experiments
-#' @param distribution Distribution used to generate sample
 #'
-#' @return List of: effect size, lower and upper intervals
+#' @return List of: effect size, lower and upper limits of the confidence interval
 #' @export
-#'
-#' @examples
-#' non_parametric_rr_meta(10, 6, 5, 3, 3)
-non_parametric_rr_meta <- function(sample_size,
+meta_nprr <- function(sample_size_e,
                                    mean_e,
+                                   sample_size_c,
                                    mean_c,
-                                   sd_e,
-                                   n_experiments,
-                                   distribution = "normal"){
+                                   log_transformed = TRUE,
+                                   alpha_level = 0.05){
 
-  e <- list()
-  c <- list()
+  estimated_variance <- (sample_size_e + sample_size_c) / (sample_size_e * sample_size_c)
+  rr <- mean_e / mean_c
+  if(log_transformed)
+    rr <- log(rr)
 
-  samples <- sample_generator(n_experiments,
-                              sample_size,
-                              mean_e,
-                              sd_e,
-                              mean_c,
-                              sd_c,
-                              distribution)
-  e <- samples[[1]]
-  c <- samples[[2]]
+  global_rr <- sum(rr * estimated_variance) / sum(estimated_variance)
+  left_limit_confidence_interval <- global_rr - pnorm(1 - alpha_level) * sqrt(sum(estimated_variance))
+  right_limit_confidence_interval <- global_rr + pnorm(1 - alpha_level) * sqrt(sum(estimated_variance))
 
+  if(log_transformed) {
+    global_rr <- exp(global_rr)
+    left_limit_confidence_interval <- exp(left_limit_confidence_interval)
+    right_limit_confidence_interval <- exp(right_limit_confidence_interval)
+  }
 
-  overall_sample_size <- rep(sample_size, n_experiments)
-
-  overall_mean_e <- sapply(e, mean)
-  overall_mean_c <- sapply(c, mean)
-  overall_sd_e   <- sapply(e, sd)
-  overall_sd_c   <- sapply(c, sd)
-
-  # d <-
-
-  result <- list(d$TE.fixed, d$lower.fixed, d$upper.fixed)
+  return <- list(TE = global_rr,
+                 lower = left_limit_confidence_interval,
+                 upper = right_limit_confidence_interval)
 
 }
 
 #' Estimated treatment effect and
 #' lower and upper confidence interval limits
 #' using the Statistical Vote Counting method
-#'
-#' For one experiment or study the individual
-#' effect is calculated, for more than one
-#' the overall effect is calculated.
-#'
-#' While variance is not required for this method,
-#' it is still needed to generate the samples.
-#'
+
 #' @param sample_size Number of observations
 #' @param mean_e Estimated mean in experimental group
 #' @param mean_c Estimated mean in control group
-#' @param sd_e Standard deviation (for sample generation purposes)
 #' @param n_experiments Number of experiments
-#' @param distribution Distribution used to generate sample
 #'
-#' @return List of effect size, lower and upper intervals
+#' @return List of: effect size, lower and upper limits of the confidence interval
 #' @export
-#'
-#' @examples
-#' vote_counting(10, 6, 5, 3, 3)
-vote_counting <- function(sample_size,
-                           mean_e,
-                           mean_c,
-                           sd_e,
-                           n_experiments,
-                           distribution = "normal"){
-
-  e <- list()
-  c <- list()
-
-  samples <- sample_generator(n_experiments,
-                              sample_size,
-                              mean_e,
-                              sd_e,
-                              mean_c,
-                              sd_c,
-                              distribution)
-  e <- samples[[1]]
-  c <- samples[[2]]
-
-
-  overall_sample_size <- rep(sample_size, n_experiments)
-
-  overall_mean_e <- sapply(e, mean)
-  overall_mean_c <- sapply(c, mean)
-  overall_sd_e   <- sapply(e, sd)
-  overall_sd_c   <- sapply(c, sd)
-
-  # d <-
-
-  result <- list(d$TE.fixed, d$lower.fixed, d$upper.fixed)
+vote_counting <- function(sample_size_e,
+                          mean_e,
+                          sample_size_c,
+                          mean_c,
+                          alpha_level = 0.05){
 
 }
