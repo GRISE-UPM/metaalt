@@ -22,8 +22,8 @@ meta_nprr <- function(sample_size_e,
     rr <- log(rr)
 
   global_rr <- sum(rr * estimated_variance) / sum(estimated_variance)
-  left_limit_confidence_interval <- global_rr - pnorm(1 - alpha_level) * sqrt(sum(estimated_variance))
-  right_limit_confidence_interval <- global_rr + pnorm(1 - alpha_level) * sqrt(sum(estimated_variance))
+  left_limit_confidence_interval <- global_rr - qnorm(1 - alpha_level / 2) * sqrt(sum(estimated_variance))
+  right_limit_confidence_interval <- global_rr + qnorm(1 - alpha_level / 2) * sqrt(sum(estimated_variance))
 
   if(log_transformed) {
     global_rr <- exp(global_rr)
